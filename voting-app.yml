@@ -31,10 +31,16 @@ stages:
         containerRegistry: '$(dockerHubConnection)'
         command: 'login'
 
-    - script: |
-        docker build -t $(dockerHubNamespace)/$(imageName):$(Build.BuildId) .
-        docker tag $(dockerHubNamespace)/$(imageName):$(Build.BuildId) $(dockerHubNamespace)/$(imageName):latest
-      displayName: 'Build and Tag Docker Image'
+    - task: Docker@2
+      displayName: 'Build Docker Image'
+      inputs:
+        containerRegistry: '$(dockerHubConnection)'
+        repository: '$(dockerHubNamespace)/$(imageName)'
+        command: 'build'
+        Dockerfile: 'result/Dockerfile'  # Adjust the path if your Dockerfile is not in the root
+        tags: |
+          $(Build.BuildId)
+          latest
 
     - task: Docker@2
       displayName: 'Push Docker Image'
@@ -42,6 +48,7 @@ stages:
         containerRegistry: '$(dockerHubConnection)'
         repository: '$(dockerHubNamespace)/$(imageName)'
         command: 'push'
+        Dockerfile: 'result/Dockerfile'
         tags: |
           $(Build.BuildId)
           latest

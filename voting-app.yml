@@ -22,11 +22,6 @@ stages:
     pool:
       name: 'practice-vm-agent'  # Replace with the name of your self-hosted agent pool
     steps:
-    - task: DockerInstaller@0
-      displayName: 'Install Docker'
-      inputs:
-        dockerVersion: 'latest'
-
     - script: docker --version
       displayName: 'Check Docker Version'
 

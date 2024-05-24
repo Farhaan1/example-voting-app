@@ -1,0 +1,53 @@
+# Docker
+# Build a Docker image
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+ paths:
+   include:
+     - result/*
+pool:
+  name: 'practice-vm-agent'  # Replace with the name of your self-hosted agent pool
+
+variables:
+  dockerHubConnection: 'dockerhub'  # Replace with the name of your Docker Hub service connection
+  dockerHubNamespace: 'farhaan01'  # Replace with your Docker Hub username
+  imageName: 'result'  # Replace with your desired image name
+
+stages:
+- stage: BuildAndPush
+  jobs:
+  - job: BuildAndPushJob
+    displayName: 'Build and Push Docker Image'
+    pool:
+      name: 'practice-vm-agent'  # Replace with the name of your self-hosted agent pool
+    steps:
+    - task: DockerInstaller@0
+      displayName: 'Install Docker'
+      inputs:
+        dockerVersion: 'latest'
+
+    - script: docker --version
+      displayName: 'Check Docker Version'
+
+    - task: Docker@2
+      displayName: 'Login to Docker Hub'
+      inputs:
+        containerRegistry: '$(dockerHubConnection)'
+        command: 'login'
+
+    - script: |
+        docker build -t $(dockerHubNamespace)/$(imageName):$(Build.BuildId) .
+        docker tag $(dockerHubNamespace)/$(imageName):$(Build.BuildId) $(dockerHubNamespace)/$(imageName):latest
+      displayName: 'Build and Tag Docker Image'
+
+    - task: Docker@2
+      displayName: 'Push Docker Image'
+      inputs:
+        containerRegistry: '$(dockerHubConnection)'
+        repository: '$(dockerHubNamespace)/$(imageName)'
+        command: 'push'
+        tags: |
+          $(Build.BuildId)
+          latest
+

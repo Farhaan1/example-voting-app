@@ -52,4 +52,13 @@ stages:
         tags: |
           $(Build.BuildId)
           latest
-
+- stage: Update
+  displayName: Update 
+  jobs:
+  - job: Update
+    displayName: Update
+    steps:
+    - task: ShellScript@2
+      inputs:
+        scriptPath: 'scripts/updateK8sManifests.sh'
+        args: 'vote $(imageName) $(tag)'    
